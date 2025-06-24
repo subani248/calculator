@@ -29,13 +29,16 @@ function appendNumber(numChar) {
             display.innerText.lastIndexOf('/')
         );
         const currentNumberSegment = display.innerText.substring(lastOperatorIndex + 1);
-        if (currentNumberSegment.includes('.')) return;
-        display.innerText += numChar;
+
+        if (currentNumberSegment.includes('.')) {
+            return;
+        } else {
+            display.innerText += numChar;
+        }
     }
     else {
         display.innerText += numChar;
     }
-
     lastInputWasOperator = false;
     animateDisplay();
 }
@@ -51,7 +54,6 @@ function appendOperator(operatorChar) {
     } else {
         display.innerText += operatorChar;
     }
-
     lastInputWasOperator = true;
     animateDisplay();
 }
@@ -69,9 +71,11 @@ function calculate() {
         hasError = false;
         return;
     }
-
     try {
-        let expression = display.innerText.replace(/÷/g, '/').replace(/×/g, '*');
+        let expression = display.innerText
+            .replace(/÷/g, '/')
+            .replace(/×/g, '*');
+
         let result = eval(expression);
 
         if (isNaN(result) || !isFinite(result)) {
@@ -84,7 +88,6 @@ function calculate() {
         display.innerText = "Error";
         hasError = true;
     }
-
     lastInputWasOperator = false;
     animateDisplay();
 }
@@ -109,7 +112,6 @@ function toggleSign() {
             display.innerText = (-currentValue).toString();
         }
     }
-
     animateDisplay();
 }
 
@@ -133,6 +135,58 @@ function calculatePercentage() {
             display.innerText = (currentValue / 100).toString();
         }
     }
-
     animateDisplay();
 }
+
+function backspace() {
+    if (hasError) {
+        display.innerText = "0";
+        hasError = false;
+        return;
+    }
+
+    let current = display.innerText;
+    if (current.length > 1 && current !== "0") {
+        display.innerText = current.slice(0, -1);
+        const lastChar = display.innerText.slice(-1);
+        lastInputWasOperator = ['+', '-', '*', '/'].includes(lastChar);
+    } else {
+        display.innerText = "0";
+        lastInputWasOperator = false;
+    }
+    animateDisplay();
+}
+
+window.addEventListener('keydown', (event) => {
+    const key = event.key;
+
+    if (/[0-9]/.test(key)) {
+        appendNumber(key);
+    }
+    else if (key === '+' || key === '-') {
+        appendOperator(key);
+    }
+    else if (key === '*' || key === 'x' || key === 'X') {
+        appendOperator('*');
+    }
+    else if (key === '/') {
+        appendOperator('/');
+    }
+    else if (key === '.') {
+        appendNumber('.');
+    }
+    else if (key === '=' || key === 'Enter') {
+        calculate();
+        event.preventDefault();
+    }
+    else if (key === 'Backspace') {
+        backspace();
+    }
+    else if (key === 'Escape' || key === 'Delete') {
+        clearDisplay();
+    }
+    else if (key === '%') {
+        calculatePercentage();
+    }
+});
+
